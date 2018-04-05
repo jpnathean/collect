@@ -108,6 +108,10 @@ public class MainMenuActivity extends AppCompatActivity {
         setContentView(R.layout.main_menu);
         initToolbar();
 
+        //Another solution to get usertoken from one activity to another
+        //Intent i = getIntent();
+        //String value = i.getStringExtra("UserToken");
+
         // enter data button. expects a result.
         enterDataButton = findViewById(R.id.enter_data);
         enterDataButton.setText(getString(R.string.enter_data_button));
