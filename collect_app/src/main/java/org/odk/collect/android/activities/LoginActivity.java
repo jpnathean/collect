@@ -28,7 +28,6 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.tasks.LoginResult;
 import org.odk.collect.android.utilities.HttpUtility;
 
-
 /**
  * A login screen that offers login via email/password.
  */
@@ -50,8 +49,8 @@ public class LoginActivity extends AppCompatActivity {
         mUsernameView = findViewById(R.id.username);
 
         mPasswordView = findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener((textView, id, keyEvent) ->{
-            if(id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL){
+        mPasswordView.setOnEditorActionListener((textView, id, keyEvent) -> {
+            if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
                 attemptLogin();
                 return true;
             }
@@ -66,8 +65,8 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void attemptLogin(){
-        if(mAuthTask != null){
+    private void attemptLogin() {
+        if (mAuthTask != null) {
             return;
         }
 
@@ -82,16 +81,25 @@ public class LoginActivity extends AppCompatActivity {
         boolean cancel = false;
         View focusView = null;
 
-        if(!TextUtils.isEmpty(password)){
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_incorrect_password));
+            focusView = mPasswordView;
+            cancel = true;
         }
 
-        if(cancel){
+        // Check for a valid username.
+        if (TextUtils.isEmpty(username)) {
+            mUsernameView.setError(getString(R.string.error_field_required));
+            focusView = mUsernameView;
+            cancel = true;
+        }
+
+        if (cancel) {
             //There was an error; do not attempt to login and focus the first
             //form field with an error
             focusView.requestFocus();
-        } else{
-            //Show a progress spinner, and kick off a background task to #
+        } else {
+            //Show a progress spinner, and kick off a background task to
             //perform the user login attempt
             showProgress(true);
             mAuthTask = new PostAsync(username, password);
@@ -99,8 +107,13 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isPasswordValid(String password) {
+        return password.length() > 4;
+    }
+
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show){
+    private void showProgress(final boolean show) {
         //On HoneyComb MR2 we have the ViewPropertyAnimator APIs, which allow
         //for very easy animations. If available, use these APIs to fade-in
         //the progress spinner
@@ -120,16 +133,17 @@ public class LoginActivity extends AppCompatActivity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    class PostAsync extends AsyncTask<String, String, JSONObject> {
+    private class PostAsync extends AsyncTask<String, String, JSONObject> {
 
         private HashMap<String, String> parameters;
 
         private ProgressDialog pDialog;
         private static final String urlForEco = "https://lgxmldemo.azurewebsites.net/LogixEco";
 
-        PostAsync(String username, String password){
-            parameters =  (HashMap<String, String>) GetLoginStruct(username,password);
+        PostAsync(String username, String password) {
+            parameters = (HashMap<String, String>) GetLoginStruct(username, password);
         }
+
         HttpUtility httpUtility = new HttpUtility();
 
         @Override
@@ -143,67 +157,69 @@ public class LoginActivity extends AppCompatActivity {
 
         protected JSONObject doInBackground(String... params) {
 
+            JSONObject json = httpUtility.httpPost(
+                    urlForEco + "/api/Login", "POST", parameters, "");
+            JSONObject res = null;
             try {
                 //Simulate network access
-                Thread.sleep(2000);
+                Thread.sleep(1500);
 
                 Log.d("request", "starting");
-
-                JSONObject json = httpUtility.httpPost(
-                        urlForEco + "/api/Login", "POST", parameters , "");
 
                 if (json != null) {
                     Log.d("JSON result", json.toString());
 
-                    return json;
+                    res = json;
                 }
 
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-
-            return null;
+            return res;
         }
 
-        protected void onPostExecute(JSONObject json) {
+        protected void onPostExecute(JSONObject res) {
             LoginResult resObj = new LoginResult();
 
             if (pDialog != null && pDialog.isShowing()) {
                 pDialog.dismiss();
             }
 
-            if (json != null) {
+            if (res != null) {
                 try {
-                    resObj.setUserToken(json.getString("UserToken"));
-                    resObj.setSuccess_Flag(json.getBoolean("Success_Flag"));
-                    resObj.setMessage(json.getString("Message"));
+                    resObj.setUserToken(res.getString("UserToken"));
+                    resObj.setSuccess_Flag(res.getBoolean("Success_Flag"));
+                    resObj.setMessage(res.getString("Message"));
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
 
-            if (resObj.getSuccess_Flag()) {
-
+            if(resObj.getSuccess_Flag()){
                 Intent i = new Intent(LoginActivity.this, MainMenuActivity.class);
                 startActivity(i);
+
                 //another way to get usertoken from one activity to another
                 //i.putExtra("UserToken", LoginResult.getUserToken());
-            } else {
-                Toast.makeText(getApplicationContext(), resObj.getMessage(),
-                        Toast.LENGTH_LONG).show();
-                mPasswordView.requestFocus();
+                finish();
+            } else{
+                // "restarts" the login form if incorrect password or username is entered
+                if(Build.VERSION.SDK_INT >= 11){
+                    recreate();
+                    Toast.makeText(getApplicationContext(), "Invalid username or password",
+                            Toast.LENGTH_LONG).show();
+                } else{
+                    finish();
+                    startActivity(getIntent());
+                    Toast.makeText(getApplicationContext(), "Invalid username or password",
+                            Toast.LENGTH_LONG).show();
+                }
             }
-        }
-
-        @Override
-        protected void onCancelled(){
-            mAuthTask = null;
-            showProgress(false);
         }
     }
 
-    private Map<String, String> GetLoginStruct(String username, String password){
+    private Map<String, String> GetLoginStruct(String username, String password) {
         String AuthKey = "Logix";
         String SystemCode = "LGX1";
         HashMap<String, String> parameters = new HashMap<>();
