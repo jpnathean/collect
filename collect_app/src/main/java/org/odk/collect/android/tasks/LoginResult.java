@@ -19,7 +19,7 @@ public class LoginResult {
 
     public static String getUserToken() { return UserToken; }
 
-    public void setUserToken(String UserToken){
+    public static void setUserToken(String UserToken){
         LoginResult.UserToken = UserToken;
     }
 }

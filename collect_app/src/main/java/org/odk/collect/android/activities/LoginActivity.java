@@ -57,6 +57,14 @@ public class LoginActivity extends AppCompatActivity {
             return false;
         });
 
+        mUsernameView.setOnEditorActionListener((textView, id, keyEvent) -> {
+            if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
+                attemptLogin();
+                return true;
+            }
+            return false;
+        });
+
         Button mSignInButton = findViewById(R.id.sign_in_button);
         mSignInButton.setOnClickListener(view -> attemptLogin());
 
@@ -81,8 +89,8 @@ public class LoginActivity extends AppCompatActivity {
         boolean cancel = false;
         View focusView = null;
 
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_incorrect_password));
+        if (TextUtils.isEmpty(password)) {
+            mPasswordView.setError(getString(R.string.error_field_required));
             focusView = mPasswordView;
             cancel = true;
         }
@@ -106,11 +114,6 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask.execute();
         }
     }
-
-    private boolean isPasswordValid(String password) {
-        return password.length() > 4;
-    }
-
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
@@ -187,7 +190,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if (res != null) {
                 try {
-                    resObj.setUserToken(res.getString("UserToken"));
+                    LoginResult.setUserToken(res.getString("UserToken"));
                     resObj.setSuccess_Flag(res.getBoolean("Success_Flag"));
                     resObj.setMessage(res.getString("Message"));
 
