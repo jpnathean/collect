@@ -1,25 +1,25 @@
 package org.odk.collect.android.tasks;
 
 public class LoginResult {
-    private String Message;
-    private boolean Success_Flag;
-    private static String UserToken = "";
+    private static String message = "";
+    private static  boolean successFlag;
+    private static String userToken = "";
 
-    public String getMessage(){ return Message; }
+    public static String getMessage(){ return message; }
 
-    public void setMessage(String Message){
-        this.Message = Message;
+    public static void setMessage(String Message){
+        message = Message;
     }
 
-    public boolean getSuccess_Flag() { return Success_Flag; }
+    public static boolean getSuccess_Flag() { return successFlag; }
 
-    public void setSuccess_Flag(boolean Success_Flag){
-        this.Success_Flag = Success_Flag;
+    public static void setSuccess_Flag(boolean Success_Flag){
+        successFlag = Success_Flag;
     }
 
-    public static String getUserToken() { return UserToken; }
+    public static String getUserToken() { return userToken; }
 
     public static void setUserToken(String UserToken){
-        LoginResult.UserToken = UserToken;
+        userToken = UserToken;
     }
 }

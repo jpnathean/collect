@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.odk.collect.android.R;
 import org.odk.collect.android.tasks.LoginResult;
 import org.odk.collect.android.utilities.HttpUtility;
+import org.odk.collect.android.utilities.SharedPrefs;
 
 /**
  * A login screen that offers login via email/password.
@@ -70,8 +71,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-
-    }
+        }
 
     private void attemptLogin() {
         if (mAuthTask != null) {
@@ -182,7 +182,6 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(JSONObject res) {
-            LoginResult resObj = new LoginResult();
 
             if (pDialog != null && pDialog.isShowing()) {
                 pDialog.dismiss();
@@ -191,16 +190,17 @@ public class LoginActivity extends AppCompatActivity {
             if (res != null) {
                 try {
                     LoginResult.setUserToken(res.getString("UserToken"));
-                    resObj.setSuccess_Flag(res.getBoolean("Success_Flag"));
-                    resObj.setMessage(res.getString("Message"));
+                    LoginResult.setSuccess_Flag(res.getBoolean("Success_Flag"));
+                    LoginResult.setMessage(res.getString("Message"));
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
 
-            if(resObj.getSuccess_Flag()){
-                Intent i = new Intent(LoginActivity.this, MainMenuActivity.class);
+            if(LoginResult.getSuccess_Flag()){
+                SharedPrefs.saveSharedSetting(LoginActivity.this, "NatheanPref", "false");
+                Intent i = new Intent(getApplicationContext(), MainMenuActivity.class);
                 startActivity(i);
 
                 //another way to get usertoken from one activity to another

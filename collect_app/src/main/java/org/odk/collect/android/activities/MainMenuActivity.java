@@ -40,6 +40,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 
@@ -52,10 +53,12 @@ import org.odk.collect.android.preferences.AutoSendPreferenceMigrator;
 import org.odk.collect.android.preferences.PreferenceKeys;
 import org.odk.collect.android.preferences.PreferencesActivity;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
+import org.odk.collect.android.tasks.LoginResult;
 import org.odk.collect.android.utilities.ApplicationConstants;
 import org.odk.collect.android.utilities.AuthDialogUtility;
 import org.odk.collect.android.utilities.PlayServicesUtil;
 import org.odk.collect.android.utilities.SharedPreferencesUtils;
+import org.odk.collect.android.utilities.SharedPrefs;
 import org.odk.collect.android.utilities.ToastUtils;
 
 import java.io.File;
@@ -108,6 +111,7 @@ public class MainMenuActivity extends AppCompatActivity {
         setContentView(R.layout.main_menu);
         initToolbar();
 
+        CheckSession();
         //Another solution to get usertoken from one activity to another
         //Intent i = getIntent();
         //String value = i.getStringExtra("UserToken");
@@ -473,6 +477,11 @@ public class MainMenuActivity extends AppCompatActivity {
                             .logAction(this, "createAdminPasswordDialog", "show");
                 }
                 return true;
+            case R.id.menu_logout:
+                Collect.getInstance().getActivityLogger()
+                        .logAction(this, "OnOptionsItemSelected", "MENU_LOGOUT");
+                logoutUser();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -735,4 +744,29 @@ public class MainMenuActivity extends AppCompatActivity {
         }
     }
 
+    public void logoutUser(){
+        SharedPrefs.saveSharedSetting(MainMenuActivity.this, "NatheanPref", "true");
+        Intent logOut = new Intent(getApplicationContext(), LoginActivity.class);
+
+        startActivity(logOut);
+        finish();
+    }
+
+    public void CheckSession(){
+        Boolean check = Boolean.valueOf(SharedPrefs.readSharedSetting(MainMenuActivity.this,
+                "NatheanPref", "true"));
+
+        Intent introIntent = new Intent(MainMenuActivity.this, LoginActivity.class);
+        introIntent.putExtra("NatheanPref", "true");
+
+        if(check){
+            startActivity(introIntent);
+            finish();
+        }
+
+        if(LoginResult.getUserToken() == null || LoginResult.getUserToken().equals("")){
+            startActivity(introIntent);
+            finish();
+        }
+    }
 }
